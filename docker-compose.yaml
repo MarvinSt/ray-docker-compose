@@ -1,0 +1,45 @@
+version: "3"
+
+services:
+  ray-head:
+    image: ${RAY_IMAGE}
+    ports:
+      - "${REDISPORT}:${REDISPORT}"
+      - "${DASHBOARDPORT}:${DASHBOARDPORT}"
+      - "${HEADNODEPORT}:${HEADNODEPORT}"
+    env_file:
+      - .env
+    command: bash -c "ray start --head --dashboard-port=${DASHBOARDPORT} --port=${REDISPORT} --dashboard-host=0.0.0.0 --redis-password=${REDISPASSWORD} --block"
+    shm_size: 2g
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: '2g'
+    networks:
+      - ray_net
+
+  ray-worker:
+    image: ${RAY_IMAGE}
+    depends_on: 
+      - ray-head
+    env_file:
+      - .env
+    command: bash -c "ray start --address=ray-head:${REDISPORT} --redis-password=${REDISPASSWORD} --num-cpus=${NUM_CPU_WORKER} --block" 
+    shm_size: 2g
+    deploy:
+      mode: replicated
+      replicas: ${NUM_WORKERS} 
+      resources:
+        limits:
+          cpus: ${NUM_CPU_WORKER}
+          memory: '2g'
+    networks:
+      - ray_net
+  
+networks:
+  ray_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.63.0.0/16
