@@ -2,7 +2,8 @@ version: "3"
 
 services:
   ray-head:
-    image: ${RAY_IMAGE}
+    build:
+      context: .
     ports:
       - "${REDISPORT}:${REDISPORT}"
       - "${DASHBOARDPORT}:${DASHBOARDPORT}"
@@ -16,11 +17,10 @@ services:
         limits:
           cpus: '1'
           memory: '2g'
-    networks:
-      - ray_net
 
   ray-worker:
-    image: ${RAY_IMAGE}
+    build:
+      context: .
     depends_on: 
       - ray-head
     env_file:
@@ -29,17 +29,8 @@ services:
     shm_size: 2g
     deploy:
       mode: replicated
-      replicas: ${NUM_WORKERS} 
+      replicas: 1
       resources:
         limits:
-          cpus: ${NUM_CPU_WORKER}
+          cpus: 1
           memory: '2g'
-    networks:
-      - ray_net
-  
-networks:
-  ray_net:
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.63.0.0/16
