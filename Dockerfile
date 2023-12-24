@@ -1,5 +1,34 @@
-FROM python:3.9.7-slim
+# The examples Docker image adds dependencies needed to run the examples
+FROM rayproject/ray:latest
 
-RUN pip install --no-cache-dir -U 'ray[default] @ https://s3-us-west-2.amazonaws.com/ray-wheels/latest/ray-2.0.0.dev0-cp39-cp39-manylinux2014_x86_64.whl'
+# Needed to run Tune example with a 'plot' call - which does not actually render a plot, but throws an error.
+RUN apt-get update && apt-get install -y zlib1g-dev libgl1-mesa-dev libgtk2.0-dev && apt-get clean
+RUN pip install --no-cache-dir -U pip \
+    autorom[accept-rom-license] \
+    gym[atari] \
+    scikit-image \
+    tensorflow \
+    lz4 \
+    pytest-timeout \
+    smart_open \
+    tensorflow_probability \
+    dm_tree \
+    h5py   # Mutes FutureWarnings \
+    bayesian-optimization \
+    hyperopt \
+    ConfigSpace==0.4.10 \
+    scikit-optimize \
+    hpbandster \
+    lightgbm \
+    xgboost \
+    torch \
+    torchvision \
+    tensorboardX \
+    zoopt \
+    mlflow \
+    pytest-remotedata>=0.3.1 \
+    matplotlib \
+    jupyter \
+    pandas
 
 CMD ["bash", "-c", "ray start --head --num-cpus 1 --dashboard-host 0.0.0.0 --include-dashboard true --block"]
