@@ -12,6 +12,9 @@ services:
       - .env
     command: bash -c "ray start --head --dashboard-port=${DASHBOARDPORT} --port=${REDISPORT} --dashboard-host=0.0.0.0 --redis-password=${REDISPASSWORD} --block"
     shm_size: 2g
+    volumes:
+      # Mount notebooks dir
+      - ./notebooks:/notebooks
     deploy:
       resources:
         limits:
